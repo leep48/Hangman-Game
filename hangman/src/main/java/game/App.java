@@ -3,28 +3,76 @@ package game;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 class HangmanGame {
-    private WordBank wordBank = new WordBank();
+    private WordBank wordBank;
+    private HangmanRound currentRound;
+    private Scanner scn;
+
+    public HangmanGame() {
+        wordBank = new WordBank();
+        scn = new Scanner();
+    }
+
 
     public void startGame() {
-        String randomWord = wordBank.getRandomWord();
+        System.out.println("Welcome to Hangman!");
+        boolean playAgain = true;
+
+        while (playAgain) {
+            playRound();
+            System.out.println("Would you like to play again? (y/n)");
+            String response = scn.nextLine().toLowerCase();
+            playAgain = response.equals("yes");
+        }
+
+        System.out.println("Thanks for playing!");
     }
 
-    public playRound() {
+    public void playRound() {
+        String wordToGuess = wordBank.getRandomWord();
+        currentRound = new HangmanRound(wordToGuess);
 
+        System.out.println("Let's start a new round!");
+        System.out.println("Your word has " + wordToGuess.length() + " letters.");
+
+        while (!isGameOver()) {
+            currentRound.displayGuessedWord();
+            System.out.println("Enter a letter or try to guess the whole word: ");
+            String guess = scn.nextLine().toLowerCase();
+
+            handleGuess(guess);
+        }
+
+        if (currentRound.hasWon()) {
+            System.out.println("Congratulation! You guessed the word: " + wordToGuess);
+        } else {
+            System.out.println("Sorry, you lost! The correct word was: " + wordToGuess);
+        }
     }
 
-    boolean isGameOver() {
-
+    private boolean isGameOver() {
+        return currentRound.hasWon() || currentRound.hasLost();
     }
 
-    void displayResult() {
-
-    }
-
-    void showHint(String keyword) {
-
+    private void handleGuess(String guess) {
+        if (guess.length() == 1) {
+            char guessedLetter = guess.charAt(0);
+            if (Character.isLetter(guessedLetter)) {
+                boolean correct = currentRound.guessLetter(guessedLetter);
+                if (!correct) {
+                    System.out.println("Incorrect guess! You have " + currentRound.getAttemptsLeft() + " attempts remaining.");
+                }
+            } else {
+                System.out.println("Please enter a valid letter.");
+            }
+        } else {
+            boolean correct = currentRound.guessWord(guess);
+            if (!correct) {
+                System.out.println("Incorrect word guess! You have " + currentRound.getAttemptsLeft() + " attempts remaining.");
+            }
+        }
     }
 }
 
@@ -51,7 +99,7 @@ class HangmanRound {
     private List<Character> incorrectGuesses;
 
     public HangmanRound(String word) {
-
+        currentWord = word;
     }
 
     public boolean guessLetter(char letter) {
@@ -76,6 +124,10 @@ class HangmanRound {
 
     public void displayGuessedWord() {
 
+    }
+
+    public int getAttemptsLeft() {
+        return attemptsLeft;
     }
 }
 
