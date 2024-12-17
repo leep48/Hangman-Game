@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.StringTokenizer;
+import java.util.Set;
+import java.util.HashSet;
 
 class HangmanGame {
     private WordBank wordBank;
@@ -12,7 +15,7 @@ class HangmanGame {
 
     public HangmanGame() {
         wordBank = new WordBank();
-        scn = new Scanner();
+        scn = new Scanner(System.in);
     }
 
 
@@ -24,7 +27,7 @@ class HangmanGame {
             playRound();
             System.out.println("Would you like to play again? (y/n)");
             String response = scn.nextLine().toLowerCase();
-            playAgain = response.equals("yes");
+            playAgain = response.equals("y");
         }
 
         System.out.println("Thanks for playing!");
@@ -46,7 +49,7 @@ class HangmanGame {
         }
 
         if (currentRound.hasWon()) {
-            System.out.println("Congratulation! You guessed the word: " + wordToGuess);
+            System.out.println("Congratulations! You guessed the word: " + wordToGuess);
         } else {
             System.out.println("Sorry, you lost! The correct word was: " + wordToGuess);
         }
@@ -82,6 +85,8 @@ class WordBank {
     public WordBank() {
         wordList.add("word");
         wordList.add("test");
+        wordList.add("ball");
+        wordList.add("game");
     }
 
     public String getRandomWord() {
@@ -96,34 +101,66 @@ class HangmanRound {
     private String currentWord;
     private StringBuffer guessedWord = new StringBuffer();
     private int attemptsLeft;
-    private List<Character> incorrectGuesses;
+    private HashSet<Character> correctCharGuesses = new HashSet<Character>();
+    private StringTokenizer strTokenizer;
 
     public HangmanRound(String word) {
         currentWord = word;
+        attemptsLeft = 6;
+        correctCharGuesses.clear();
+        for (int i = 0; i < currentWord.length(); i++) {
+            guessedWord.append("_");
+        }
     }
 
     public boolean guessLetter(char letter) {
-
+        for (int i = 0; i < currentWord.length(); i++) {
+            if (currentWord.charAt(i) == letter) {
+                updateGuessedWord(letter, i);
+                correctCharGuesses.add(letter);
+            }
+        }
+        if (correctCharGuesses.contains(letter)) {
+            return true;
+        }
+        attemptsLeft--;
+        return false;
     }
 
     public boolean guessWord(String word) {
+        strTokenizer = new StringTokenizer(word);
 
+        while (strTokenizer.hasMoreTokens() && attemptsLeft > 0) {
+            if (strTokenizer.nextToken().equals(currentWord)) {
+                guessedWord.replace(0, currentWord.length(), currentWord);
+                return true;
+            } else {
+                attemptsLeft--;
+            }
+        }
+        return false;
     }
 
     public void updateGuessedWord(char letter, int index) {
-
+        guessedWord.replace(index, index+1, Character.toString(letter));
     }
 
     public boolean hasWon() {
-
+        if (guessedWord.toString().equals(currentWord)) {
+            return true;
+        }
+        return false;
     }
 
     public boolean hasLost() {
-
+        if (attemptsLeft <= 0) {
+            return true;
+        }
+        return false;
     }
 
     public void displayGuessedWord() {
-
+        System.out.println(guessedWord.toString());
     }
 
     public int getAttemptsLeft() {
@@ -131,6 +168,7 @@ class HangmanRound {
     }
 }
 
+/*
 class StringProcessor {
     public String[] tokenize(String sentence) {
         return "test";
@@ -144,7 +182,8 @@ class StringProcessor {
         return "test";
     }
 }
-
+*/
+/*
 class GameUtils {
     public boolean isValidLetter(char letter) {
 
@@ -158,10 +197,11 @@ class GameUtils {
 
     }
 }
-
+*/
 
 public class App {
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        HangmanGame game = new HangmanGame();
+        game.startGame();
     }
 }
